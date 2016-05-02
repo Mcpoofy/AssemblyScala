@@ -1,5 +1,5 @@
 
-import scala.collection.mutable.{ HashMap, Stack }
+import collection.mutable.{ HashMap => Map }
 
 
 class Assembly {
@@ -22,13 +22,13 @@ class Assembly {
   // keep track of which line we are on
   var current: Int = 0
   //getting each line
-  var lines = new HashMap[Int, ARMLine]
+  var lines = new Map[Int, ARMLine]
   //defining a constant
-  var constants = new HashMap[String, Int]
+  var constants = new Map[String, Int]
   //getting the address of a variable
-  var adressesVar = new HashMap[String, Int]
+  var adressesVar = new Map[String, Int]
   //storing the refrence of an address
-  var adresses = new HashMap[Int, Int]
+  var adresses = new Map[Int, Int]
   //storing the stack
   var stack = new Array[Int](4096)
   //storing the stack counter
@@ -36,9 +36,9 @@ class Assembly {
   //storing the registers
   var regs = new Array[Int](16)
   // storing the labels starting position
-  var labelsStart = new HashMap[String, Int]
+  var labelsStart = new Map[String, Int]
   // storing the label return address
-  var labelsEnd = new HashMap[String, Int]
+  var labelsEnd = new Map[String, Int]
 
   //program counter
   var PC:Int = regs(15)
@@ -84,7 +84,7 @@ class Assembly {
   val R15:String = "r15"
 
   //make a hashmap to store the register values *also use regs
-  val registermap = new HashMap[String,Int]
+  val registermap = new Map[String,Int]
   makeHashMap()
 
 
@@ -131,15 +131,14 @@ class Assembly {
   private def setFlags(value1:Int, value2:Int, value3:Int, nZ:Int, nN:Int, nV:Int, nC:Int)
   {
 
-    if(nN==1) N = if(value3 > 0) 1 else 0;
-    if(nZ==1) Z = if(value3 == 0) 1 else 0;
-    if(nV==1) V = if((value1 >>> 31) == (value2 >>> 31) && (value2 >>> 31) != (value3 >>> 31)) 1 else 0;
-    if(nC==1) C =if((value1 >> 31) == (value2 >> 31)) 1 else 0;
+    if(nN==1) N = if(value3 > 0) 1 else 0
+    if(nZ==1) Z = if(value3 == 0) 1 else 0
+    if(nV==1) V = if((value1 >>> 31)==(value2 >>> 31) && (value2 >>> 31)!=(value3 >>> 31)) 1 else 0
+    if(nC==1) C = if((value1 >>> 31)==(value2 >>> 31)) 1 else 0
   }
 
   //prints the registers from 0 to 15
   private def printRegs(){
-    val c = 0
     var i = 0
     regs.foreach { r: Int =>
       val bin = r.toBinaryString
@@ -259,20 +258,19 @@ class Assembly {
       case Compare(dr:String, sr1:String, op:String) => {
 
 
-        val dest:Int = (registermap.getOrElse(dr,-1))
-        var r1:Int = 0
-        r1= parseInput(sr1)
+        val dest = registermap.getOrElse(dr,-1)
+        val r1 = parseInput(sr1)
 
-        var tst= regs(dest)&r1
-        var cmp = regs(dest)-r1
-        var cmp1 = regs(dest)+r1
-        var tst1 = regs(dest)^r1
+        val tst  = regs(dest) & r1
+        val cmp  = regs(dest) - r1
+        val cmp1 = regs(dest) + r1
+        val tst1 = regs(dest) ^ r1
         op match {
-          case "cmp" => setFlags(regs(dest), r1, cmp, 1,1,1,1)
+          case "cmp"  => setFlags(regs(dest), r1, cmp, 1,1,1,1)
           case "cmp1" => setFlags(regs(dest), r1, cmp1, 1,1,1,1)
-          case "tst" => setFlags(regs(dest), r1, tst, 1,1,1,1)
-          case "teq" =>setFlags(regs(dest), r1, tst1, 1,1,1,1)
-
+          case "tst"  => setFlags(regs(dest), r1, tst, 1,1,1,1)
+          case "teq"  => setFlags(regs(dest), r1, tst1, 1,1,1,1)
+          case _      => println(s"ERROR: Compare($dr, $sr1, $op) case falls through")
         }
         printFlags()
         gotoLine(line+1)
@@ -281,46 +279,44 @@ class Assembly {
       case StackPush(dr:String, str1:String) =>
       {
         //parsing the input from the push function
-        val a:Array[String] = dr.split("-");
-        val b:Array[String] = str1.split("-")
-        var a1:Int = 0
-        var a2:Int = 0
-        var b1:Int = 0
-        var b2:Int = 0
-        if(a.length >1) {
-          a1= a(0).substring(1).toInt
-          a2 =a(1).substring(1).toInt
+        val a = dr.split("-");
+        val b = str1.split("-")
+        var a1 = 0
+        var a2 = 0
+        var b1 = 0
+        var b2 = 0
+        if(a.length > 1) {
+          a1 = a(0).substring(1).toInt
+          a2 = a(1).substring(1).toInt
         }
         else {
-          a1 =  a(0).substring(1).toInt
-          a2= a1
+          a1 = a(0).substring(1).toInt
+          a2 = a1
         }
-        if(b.length >1) {
-          b1= b(0).substring(1).toInt
-          b2 =b(1).substring(1).toInt
+        if(b.length > 1) {
+          b1 = b(0).substring(1).toInt
+          b2 = b(1).substring(1).toInt
         }
         else {
-          b1 =b(0).substring(1).toInt
-          b2= b1
+          b1 = b(0).substring(1).toInt
+          b2 = b1
         }
         //because the lowest registers are set first
-        while(a1 <= a2 || b1<=b2)
+        while(a1<=a2 || b1<=b2)
         {
-          if(a1 < b1 && a1<=a2 || b1>b2)
+          if(a1<b1 && a1<=a2 || b1>b2)
           {
-            stackcounter = stackcounter -1
-            stack(stackcounter) = regs(registermap.getOrElse("r"+a1,-1))
-            RegisterOp("r"+a1, ""+stackcounter, "str")
-            a1 = a1 + 1
-
+            stackcounter -= 1
+            stack(stackcounter) = regs(registermap.getOrElse("r" + a1, -1))
+            RegisterOp("r" + a1, "" + stackcounter, "str")
+            a1 += 1
           }
           else
           {
-            stackcounter = stackcounter -1
+            stackcounter -= 1
             stack(stackcounter) = regs(registermap.getOrElse("r"+b1,-1))
             RegisterOp("r"+b1, ""+stackcounter, "str")
-            b1 = b1 + 1
-
+            b1 += 1
           }
         }
 
@@ -329,25 +325,22 @@ class Assembly {
       //pop on the stack
       case StackPop(dr:String, str:String,str1:String) =>
       {
-        val dest:Int = (registermap.getOrElse(dr,-1))
-        val r1:Int = (registermap.getOrElse(str,-1))
-        var r2:Int = (registermap.getOrElse(str1,-1))
+        val dest = registermap.getOrElse(dr,-1)
+        val r1   = registermap.getOrElse(str,-1)
+        val r2   = registermap.getOrElse(str1,-1)
 
-        RegisterOp(dr, ""+stackcounter, "ldr")
+        RegisterOp(dr, stackcounter.toString, "ldr")
         regs(dest) = stack(stackcounter)
-        stackcounter = stackcounter + 1
-        if(str!=""){
-
-
-          RegisterOp(str, ""+stackcounter, "ldr")
+        stackcounter += 1
+        if(!str.isEmpty){
+          RegisterOp(str, stackcounter.toString, "ldr")
           regs(r1) = stack(stackcounter)
-          stackcounter = stackcounter + 1
-
+          stackcounter += 1
         }
-        if(str1!="PC" && str1!="") {
-          RegisterOp(str1, ""+stackcounter, "ldr")
+        if(str1!="PC" && !str1.isEmpty) {
+          RegisterOp(str1, stackcounter.toString, "ldr")
           regs(r2)  = stack(stackcounter)
-          stackcounter= stackcounter +1
+          stackcounter += 1
         }
         gotoLine(line+1)
       }
@@ -405,16 +398,16 @@ class Assembly {
             }
             if(sr.startsWith("!"))
             {
-
               writeback2 = 1
             }
-
             if (writeback2 != 1) {
               array1.zipWithIndex.foreach { case (elem: String, i: Int) =>
                 regs(registermap.getOrElse(elem,-1)) = adresses(dest) + 1*i
               }
             }
-            if(writeback1 != 1) regs(dest) = adresses(dest) + array1.length
+            if(writeback1 != 1) {
+              regs(dest) = adresses(dest) + array1.length
+            }
 
 
           case "stm" =>
@@ -432,7 +425,9 @@ class Assembly {
                 adresses(dest + i) = adresses(regs(registermap.getOrElse(array1(i),-1)))
               }
             }
-            if(writeback1!=1) adresses(dest) = adresses(dest) + array1.length
+            if(writeback1!=1) {
+              adresses(dest) += array1.length
+            }
 
 
         }
@@ -443,24 +438,23 @@ class Assembly {
       // test if you branch (go to the start of the label ) or not
       case Branching(branch:String, op:String,link:Int, branch2:String) =>
       {
-
         op match
         {
-          case "NE" => if(NE()==1)gotoLine(labelsStart(branch))
-          case "AL"=>  gotoLine(labelsStart(branch))
-          case "EQ"=> if(EQ()==1) gotoLine(labelsStart(branch))
-          case "CS"=> if(CS()==1) gotoLine(labelsStart(branch))
-          case "MI"=> if(MI()==1) gotoLine(labelsStart(branch))
-          case "CC"=> if(CC()==1) gotoLine(labelsStart(branch))
-          case "PL"=> if(PL()==1) gotoLine(labelsStart(branch))
-          case "HI"=> if(HI()==1) gotoLine(labelsStart(branch))
-          case "LS"=> if(LS()==1) gotoLine(labelsStart(branch))
-          case "GE"=> if(GE()==1) gotoLine(labelsStart(branch))
-          case "LT"=> if(LT()==1) gotoLine(labelsStart(branch))
-          case "LE"=> if(LE()==1) gotoLine(labelsStart(branch))
-          case "GT"=> if(GT()==1) gotoLine(labelsStart(branch))
-          case "NV"=> if(NV()==1) gotoLine(labelsStart(branch))
-          case "BX"=> regs(15) = regs(registermap.getOrElse(branch,regs(15)))
+          case "AL" => gotoLine(labelsStart(branch))
+          case "NE" => if(NE()==1) gotoLine(labelsStart(branch))
+          case "EQ" => if(EQ()==1) gotoLine(labelsStart(branch))
+          case "CS" => if(CS()==1) gotoLine(labelsStart(branch))
+          case "MI" => if(MI()==1) gotoLine(labelsStart(branch))
+          case "CC" => if(CC()==1) gotoLine(labelsStart(branch))
+          case "PL" => if(PL()==1) gotoLine(labelsStart(branch))
+          case "HI" => if(HI()==1) gotoLine(labelsStart(branch))
+          case "LS" => if(LS()==1) gotoLine(labelsStart(branch))
+          case "GE" => if(GE()==1) gotoLine(labelsStart(branch))
+          case "LT" => if(LT()==1) gotoLine(labelsStart(branch))
+          case "LE" => if(LE()==1) gotoLine(labelsStart(branch))
+          case "GT" => if(GT()==1) gotoLine(labelsStart(branch))
+          case "NV" => if(NV()==1) gotoLine(labelsStart(branch))
+          case "BX" => regs(15) = regs(registermap.getOrElse(branch,regs(15)))
         }
 
         gotoLine(line+1)
