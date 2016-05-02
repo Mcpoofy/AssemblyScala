@@ -4,7 +4,7 @@ import scala.collection.mutable.{ HashMap, Stack }
 
 class Assembly {
   abstract sealed class ARMLine
- 
+ //case classes for different possible operations
   case class Math(dr:String,sr1:String,sr2:String,op:String) extends ARMLine
   case class Bitwise(dr:String,sr1:String,st2:String,op:String) extends ARMLine
   case class Move(dr:String,sr:String,op:String) extends ARMLine
@@ -81,6 +81,8 @@ class Assembly {
   val R13:String = "r13"
   val R14:String = "r14"
   val R15:String = "r15"
+  
+  //make a hashmap to store the register values *also use regs
   val registermap = new HashMap[String,Int]
   makeHashMap()
   
@@ -167,6 +169,9 @@ class Assembly {
           return regs((registermap.getOrElse(str,-1)))    
          }
   }
+  // set the flags if the operation code used requires to set flags
+  // Value 1 is the first value, value2 is the second value given, value3 is the result of the values on some operation
+  // N{X} where X is in {N,Z,V,C} is 1 if the flag is modified and 0 if its not 
   private def setFlags(value1:Int, value2:Int, value3:Int, nZ:Int, nN:Int, nV:Int, nC:Int)
   {
    
@@ -175,6 +180,8 @@ class Assembly {
     if(nV==1) V = if(value1>>31==value2>>31 && value2>>31!=value3>>31)1 else 0; 
     if(nC==1) C =if(value1>>31==value2>>31) 1 else 0;
   }
+  
+  //prints the registers from 0 to 15
   private def printRegs(){
     val c = 0
     for(c<-0 until 15 ){
@@ -182,9 +189,12 @@ class Assembly {
     }
     println("---------------------------")
   }
+  //prints the different possible flags
    private def printFlags(){
     println( "C = " +C +" N = " +N +" Z = " +Z +" V = " +V)
   }
+  // puts R{X} and r{X} where x is in [0,15] into a hashmap with the value x as a result
+  // useful for converting r{X} to x
   private def makeHashMap()
   {
     val c =0
@@ -195,6 +205,8 @@ class Assembly {
     }
     
   }
+  
+  // Used to go through and "run" the program after you have parsed each line
 
   private def gotoLine(line: Int) {
 
@@ -226,7 +238,7 @@ class Assembly {
       
       }
       
-    
+      //performing math operations on the registers
        case Math(dr:String,sr1:String,sr2:String,op:String) => {
         val dest:Int = (registermap.getOrElse(dr,-1))
         val r1:Int = regs((registermap.getOrElse(sr1,-1)))
@@ -249,6 +261,7 @@ class Assembly {
         gotoLine(line+1)
 
       }
+      //preforming logical operations and storing the bits
      case Bitwise(dr:String,sr1:String,sr2:String,op:String) => {
         val dest:Int = (registermap.getOrElse(dr,-1))
         var r1:Int = 0
@@ -267,6 +280,8 @@ class Assembly {
         gotoLine(line+1)
 
       }
+      
+      //comparing values and setting the flags
      case Compare(dr:String, sr1:String, op:String) => {
        
       
@@ -291,7 +306,7 @@ class Assembly {
      
      case StackPush(dr:String, str1:String) => 
      {
-     
+          //parsing the input from the push function
          val a:Array[String] = dr.split("-");
          val b:Array[String] = str1.split("-")
          var a1:Int = 0
@@ -314,6 +329,7 @@ class Assembly {
            b1 =b(0).substring(1).toInt
            b2= b1
          }
+         //because the lowest registers are set first
          while(a1 <= a2 || b1<=b2)
          {
            if(a1 < b1 && a1<=a2 || b1>b2)
@@ -336,6 +352,7 @@ class Assembly {
           
          gotoLine(line+1)
      }
+     //pop on the stack
       case StackPop(dr:String, str:String,str1:String) => 
      {
         val dest:Int = (registermap.getOrElse(dr,-1))
@@ -358,16 +375,15 @@ class Assembly {
          regs(r2)  = stack(stackcounter)
         stackcounter= stackcounter +1
         }
-        
-        
          gotoLine(line+1)
      }
-   
+      //define a Constant 
       case Constant(dr:String,str:Int) =>
       {
         constants.put(dr,str)
          gotoLine(line+1)
       }
+      //Commands that effect the memory and the registers
       case RegisterOp(dr:String, str:String, op:String)=>
       {
           var dest:Int = (registermap.getOrElse(dr,-1))
@@ -473,7 +489,7 @@ class Assembly {
            gotoLine(line+1)
          
       }
-      
+      // test if you branch (go to the start of the label ) or not
       case Branching(branch:String, op:String,link:Int, branch2:String) =>
       {
         
@@ -498,12 +514,14 @@ class Assembly {
          
          gotoLine(line+1)
       }
+      //define the label for the function
       case Labels(dr:String, line:Int) =>
       {
           labelsStart.put(dr,line)
           
              gotoLine(line+1)
       }
+      //define the end of a label to prevent infinite recursion
       case LabelAddress(dr:String, reta:Int) =>
        {
           labelsEnd.put(dr, reta)
@@ -518,7 +536,7 @@ class Assembly {
   }
   
   
-  
+  //The reset is pretty much copy pasted Cases that fit the format of the system
   
   
   
