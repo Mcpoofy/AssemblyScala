@@ -89,86 +89,41 @@ class Assembly {
 
 
   //condition code setting based on condition codes
-  def AL():Int =
+  def AL() = 1
+  def NV() = 0
+  def EQ() = if (Z==1) 1 else 0
+  def NE() = if (Z==0) 1 else 0
+  def CS() = if (C==1) 1 else 0
+  def CC() = if (C==0) 1 else 0
+  def MI() = if (N==1) 1 else 0
+  def PL() = if (N==0) 1 else 0
+  def VS() = if (V==1) 1 else 0
+  def VC() = if (V==0) 1 else 0
+  def HI() = if (C==0 && Z==0) 1 else 0
+  def LS() = if (C==0 || Z==1) 1 else 0
+  def GE() = if (N==V) 1 else 0
+  def LT() = if (N!=V) 1 else 0
+  def LE() = if (N==1 || N!=V) 1 else 0
+  def GT() = if (Z==0 && N==V) 1 else 0
+
+  // parse the input if you do not know if immediate, register, constant, variable passed in
+  private def parseInput(str:String): Int =
   {
-    return 1;
-  }
-  def NV():Int =
-  {
-    return 0;
-  }
-  def EQ():Int =
-  {
-    if (Z==1) return 1 else return 0
-  }
-  def NE():Int =
-  {
-    if (Z==0) return 1 else return 0
-  }
-  def CS():Int =
-  {
-    if (C==1) return 1 else return 0
-  }
-  def CC():Int =
-  {
-    if (C==0) return 1 else return 0
-  }
-  def MI():Int =
-  {
-    if (N==1) return 1 else return 0
-  }
-  def PL():Int =
-  {
-    if (N==0) return 1 else return 0
-  }
-  def VS():Int =
-  {
-    if (V==1) return 1 else return 0
-  }
-  def VC():Int =
-  {
-    if (V==0) return 1 else return 0
-  }
-  def HI():Int =
-  {
-    if (C==0 && Z==0) return 1 else return 0
-  }
-  def LS():Int =
-  {
-    if (C==0 || Z==1) return 1 else return 0
-  }
-  def GE():Int =
-  {
-    if (N==V) return 1 else return 0
-  }
-  def LT():Int =
-  {
-    if (N!=V) return 1 else return 0
-  }
-  def LE():Int =
-  {
-    if (N==1 || N!=V) return 1 else return 0
-  }
-  def GT():Int =
-  {
-    if (Z==0 && N==V) return 1 else return 0
-  }
-  // parse the input if you do not know if immeidate, register, constant, variable passed in
-  private def parseInput(str:String):Int =
-  {
+    var res = -1
     if(str.matches("[0-9]+"))
     {
-      return str.toInt
+      res = str.toInt
     }
     else if(str.startsWith("#"))
     {
-      if(str.substring(1).matches("[0-9]+")) return (str.substring(1)).toInt
-      else return  constants(str.substring(1))
+      if(str.substring(1).matches("[0-9]+")) res = str.substring(1).toInt
+      else res = constants(str.substring(1))
     }
     else
     {
-      return regs((registermap.getOrElse(str,-1)))
+      res = regs(registermap.getOrElse(str,-1))
     }
+    return res
   }
   // set the flags if the operation code used requires to set flags
   // Value 1 is the first value, value2 is the second value given, value3 is the result of the values on some operation
@@ -176,10 +131,10 @@ class Assembly {
   private def setFlags(value1:Int, value2:Int, value3:Int, nZ:Int, nN:Int, nV:Int, nC:Int)
   {
 
-    if(nN==1) N = if(value3>0) 1 else 0;
-    if(nZ==1) Z = if(value3==0) 1 else 0;
-    if(nV==1) V = if(value1>>31==value2>>31 && value2>>31!=value3>>31)1 else 0;
-    if(nC==1) C =if(value1>>31==value2>>31) 1 else 0;
+    if(nN==1) N = if(value3 > 0) 1 else 0;
+    if(nZ==1) Z = if(value3 == 0) 1 else 0;
+    if(nV==1) V = if((value1 >>> 31) == (value2 >>> 31) && (value2 >>> 31) != (value3 >>> 31)) 1 else 0;
+    if(nC==1) C =if((value1 >> 31) == (value2 >> 31)) 1 else 0;
   }
 
   //prints the registers from 0 to 15
@@ -191,10 +146,10 @@ class Assembly {
       val charsRemaining = 32 - bin.length
       val prefix = if (i < 0) "1" else "0" * charsRemaining
       val label = "R" + i + ": " + (if (i >= 10) "" else " ")
-      println(label + prefix + bin)
+      println(label + prefix + bin + s" | $r")
       i += 1
     }
-    println("---------------------------")
+    println("-" * 45)
   }
   //prints the different possible flags
   private def printFlags(){
