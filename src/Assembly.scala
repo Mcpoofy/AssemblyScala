@@ -186,7 +186,7 @@ class Assembly {
   private def printRegs(){
     val c = 0
     var i = 0
-    regs.foreach { r: Int =>
+    regs.foreach {(r: Int) =>
       val bin = r.toBinaryString
       val charsRemaining = 32 - bin.length
       val prefix = if (i < 0) "1" else "0" * charsRemaining
@@ -204,11 +204,9 @@ class Assembly {
   // useful for converting r{X} to x
   private def makeHashMap()
   {
-    val c =0
-    for(c<-0 to 15) {
-      registermap.put("r" +c, c)
-
-      registermap.put("R" +c, c)
+    (0 to 15).foreach {(c: Int) =>
+      registermap.put("r" + c, c)
+      registermap.put("r" + c, c)
     }
 
   }
@@ -404,83 +402,63 @@ class Assembly {
         gotoLine(line+1)
       }
       //Commands that effect the memory and the registers
-      case RegisterOp(dr:String, str:String, op:String)=>
+      case RegisterOp(dr:String, sr:String, op:String)=>
       {
-        var dest:Int = (registermap.getOrElse(dr,-1))
-        var str1:Int = 0
+        var dest = (registermap.getOrElse(dr,-1))
+        var source = 0
 
-        val array1 = str.replaceAll("[^a-zA-Z0-9 ,#]","").split(",")
+        val array1 = sr.replaceAll("[^a-zA-Z0-9 ,#]","").split(",")
         op match
         {
           case "adr"=>
-            str1= 0
-            var i =0
-            for(i <- 0 to (array1.length))
-            {
-              if(array1(i).matches("[a-xA-X]+")) str1+=(adressesVar.getOrElse(array1(i),-1))
-              else if(array1(i).startsWith("#") && !array1(i).endsWith("[0-9]")) str1 +=(constants.getOrElse(array1(i).substring(1),-1))
-              else if(array1(i) =="PC") str1+= PC
-              else if(array1(i).startsWith("#") && array1(i).endsWith("[0-9]")) str1 +=array1(i).substring(1).toInt
-              else str1+=regs(registermap.getOrElse(array1(i),-1))
+            array1.foreach {(elem: String) =>
+              if(elem.matches("[a-xA-X]+"))                            source += adressesVar.getOrElse(elem,-1)
+              else if(elem.startsWith("#") && !elem.endsWith("[0-9]")) source += constants.getOrElse(elem.substring(1),-1)
+              else if(elem =="PC")                                     source += PC
+              else if(elem.startsWith("#") && elem.endsWith("[0-9]"))  source += elem.substring(1).toInt
+              else                                                     source += regs(registermap.getOrElse(elem,-1))
             }
-            regs(dest) = str1
+            regs(dest) = source
           case "ldr" =>
-
-            str1 = 0
-            var i =0
-
-            for(i <- 0 to (array1.length -1))
-            {
-
-              if(array1(i).matches("[a-xA-X]+")) str1+=(adressesVar.getOrElse(array1(i),-1))
-              else if( array1(i).matches("[0-9]+")) str1 +=array1(i).substring(0).toInt
-              else if( array1(i).startsWith("#")) str1 +=array1(i).substring(1).toInt
-              else if(array1(i) =="PC") str1+= PC
-              else if( !array1(i).matches("^[Rr]") && !array1(i).endsWith("[0-9]")) str1 +=(constants.getOrElse(array1(i).substring(1),-1))
-              else str1+=regs(registermap.getOrElse(array1(i),-1))
+            array1.foreach {(elem: String) =>
+              if(elem.matches("[a-xA-X]+"))                                    source += adressesVar.getOrElse(elem,-1)
+              else if( elem.matches("[0-9]+"))                                 source += elem.substring(0).toInt
+              else if( elem.startsWith("#"))                                   source += elem.substring(1).toInt
+              else if(elem =="PC")                                             source += PC
+              else if( !elem.matches("^[Rr]") && !elem.endsWith("[0-9]")) source += constants.getOrElse(elem.substring(1),-1)
+              else                                                                  source += regs(registermap.getOrElse(elem,-1))
             }
-
-            regs(dest) =  adresses.getOrElse(str1,-1)
+            regs(dest) = adresses.getOrElse(source,-1)
           case "str" =>
-
-            str1 = 0
-            var i =0
-            for(i <- 0 to (array1.length-1))
-            {
-
-              val t:Int = registermap.getOrElse(array1(i),-1)
-              if(array1(i).matches("[a-xA-X]+")) str1+=(adressesVar.getOrElse(array1(i),-1))
-              else if(array1(i) =="PC") str1+= PC
-              else if( array1(i).matches("[0-9]+")) str1 +=array1(i).substring(0).toInt
-              else if(array1(i).startsWith("#")) str1 +=array1(i).substring(1).toInt
-              else if(array1(i).matches("^(R|r)") && !array1(i).endsWith("[0-9]"))
-              {
-                str1 +=(constants.getOrElse(array1(i).substring(1),-1))
-              }
-              else str1+=regs(registermap.getOrElse(array1(i),-1))
+            array1.foreach {(elem: String) =>
+              if(elem.matches("[a-xA-X]+"))                               source += adressesVar.getOrElse(elem,-1)
+              else if(elem =="PC")                                        source += PC
+              else if( elem.matches("[0-9]+"))                            source += elem.substring(0).toInt
+              else if(elem.startsWith("#"))                               source += elem.substring(1).toInt
+              else if(elem.matches("^(R|r)") && !elem.endsWith("[0-9]"))  source += constants.getOrElse(elem.substring(1),-1)
+              else                                                        source += regs(registermap.getOrElse(elem,-1))
             }
-
-            adresses.put(str1,regs(dest))
-
+            adresses.put(source,regs(dest))
           case "ldm" =>
             var writeback1 = 0
             var writeback2 = 0
             if(dr.startsWith("!"))
             {
               dest = regs(registermap.getOrElse(dr.substring(1),-1))
-              writeback1 =1
+              writeback1 = 1
             }
-            if(str.startsWith("!"))
+            if(sr.startsWith("!"))
             {
 
-              writeback2 =1
+              writeback2 = 1
             }
 
-            for(i <- 0 to (array1.length-1))
-            {
-              if(writeback2!=1)regs(registermap.getOrElse(array1(i),-1)) = adresses(dest)+1*i
+            if (writeback2 != 1) {
+              array1.zipWithIndex.foreach { case (elem: String, i: Int) =>
+                regs(registermap.getOrElse(elem,-1)) = adresses(dest) + 1*i
+              }
             }
-            if(writeback1!=1) regs(dest) = adresses(dest) + array1.length
+            if(writeback1 != 1) regs(dest) = adresses(dest) + array1.length
 
 
           case "stm" =>
@@ -488,18 +466,15 @@ class Assembly {
             var writeback2 = 0
             if(dr.startsWith("!"))
             {
-              dest = regs(registermap.getOrElse(dr.substring(1),-1))
-              writeback1 =1
+              dest = regs(registermap.getOrElse(dr.substring(1), -1))
+              writeback1 = 1
             }
-            if(str.startsWith("!"))
-            {
+            if(sr.startsWith("!")) { writeback2 =1 }
 
-              writeback2 =1
-            }
-
-            for(i <- 0 to (array1.length-1))
-            {
-              if(writeback2!=1)adresses(dest + i) = adresses(regs(registermap.getOrElse(array1(i),-1)))
+            if (writeback2 != 1) {
+              array1.zipWithIndex.foreach { case (elem: String, i: Int) =>
+                adresses(dest + i) = adresses(regs(registermap.getOrElse(array1(i),-1)))
+              }
             }
             if(writeback1!=1) adresses(dest) = adresses(dest) + array1.length
 
