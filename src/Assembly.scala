@@ -123,7 +123,7 @@ class Assembly {
     {
       res = regs(registermap.getOrElse(str,-1))
     }
-    return res
+    res
   }
   // set the flags if the operation code used requires to set flags
   // Value 1 is the first value, value2 is the second value given, value3 is the result of the values on some operation
@@ -174,7 +174,6 @@ class Assembly {
     lines(line) match {
 
       case Move(dr:String,sr1:String, op:String) =>
-      {
         val dest = registermap.getOrElse(dr,-1)
         var r1 = parseInput(sr1)
         op match
@@ -188,16 +187,14 @@ class Assembly {
             setFlags(regs(dest), 0, regs(dest), 1,1,0,0)
           case _ =>
         }
-        regs(dest) = r1;
+        regs(dest) = r1
         printRegs()
         gotoLine(line+1)
-      }
-
       //performing math operations on the registers
-      case Math4(dr:String,sr1:String,sr2:String,op:String) => {
+      case Math4(dr:String,sr1:String,sr2:String,op:String) =>
         val dest = registermap.getOrElse(dr,-1)
-        val r1 = regs((registermap.getOrElse(sr1,-1)))
-        var r2 = parseInput(sr2)
+        val r1 = regs(registermap.getOrElse(sr1,-1))
+        val r2 = parseInput(sr2)
 
         op match
         {
@@ -215,13 +212,9 @@ class Assembly {
           case "RORS" =>regs(dest) = Integer.rotateRight(r1, r2 & 0x000000FF); setFlags(r1, r2, regs(dest), 1,1,0,0)
           case _ => println(s"ERROR: no match for Math4($dr, $sr1, $sr2, $op)")
         }
-
         printRegs()
         gotoLine(line+1)
-
-      }
-
-      case Math3(dr: String, sr1: String, op: String) => {
+      case Math3(dr: String, sr1: String, op: String) =>
         val dest = registermap.getOrElse(dr, -1)
         val r1 = registermap.getOrElse(sr1, -1)
 
@@ -232,11 +225,9 @@ class Assembly {
 
         printRegs()
         gotoLine(line + 1)
-      }
-
       //preforming logical operations and storing the bits
-      case Bitwise(dr:String,sr1:String,sr2:String,op:String) => {
-        val dest = (registermap.getOrElse(dr,-1))
+      case Bitwise(dr:String,sr1:String,sr2:String,op:String) =>
+        val dest = registermap.getOrElse(dr,-1)
         val r1 = parseInput(sr1)
         val r2 = parseInput(sr2)
 
@@ -251,16 +242,10 @@ class Assembly {
         }
         printRegs()
         gotoLine(line+1)
-
-      }
-
       //comparing values and setting the flags
-      case Compare(dr:String, sr1:String, op:String) => {
-
-
+      case Compare(dr:String, sr1:String, op:String) =>
         val dest = registermap.getOrElse(dr,-1)
         val r1 = parseInput(sr1)
-
         val tst  = regs(dest) & r1
         val cmp  = regs(dest) - r1
         val cmp1 = regs(dest) + r1
@@ -274,12 +259,9 @@ class Assembly {
         }
         printFlags()
         gotoLine(line+1)
-      }
-
       case StackPush(dr:String, str1:String) =>
-      {
         //parsing the input from the push function
-        val a = dr.split("-");
+        val a = dr.split("-")
         val b = str1.split("-")
         var a1 = 0
         var a2 = 0
@@ -321,10 +303,8 @@ class Assembly {
         }
 
         gotoLine(line+1)
-      }
       //pop on the stack
       case StackPop(dr:String, str:String,str1:String) =>
-      {
         val dest = registermap.getOrElse(dr,-1)
         val r1   = registermap.getOrElse(str,-1)
         val r2   = registermap.getOrElse(str1,-1)
@@ -343,17 +323,13 @@ class Assembly {
           stackcounter += 1
         }
         gotoLine(line+1)
-      }
       //define a Constant
       case Constant(dr:String,str:Int) =>
-      {
         constants.put(dr,str)
         gotoLine(line+1)
-      }
       //Commands that effect the memory and the registers
       case RegisterOp(dr:String, sr:String, op:String)=>
-      {
-        var dest = (registermap.getOrElse(dr,-1))
+        var dest = registermap.getOrElse(dr,-1)
         var source = 0
 
         val array1 = sr.replaceAll("[^a-zA-Z0-9 ,#]","").split(",")
@@ -433,11 +409,8 @@ class Assembly {
         }
         printRegs()
         gotoLine(line+1)
-
-      }
       // test if you branch (go to the start of the label ) or not
       case Branching(branch:String, op:String,link:Int, branch2:String) =>
-      {
         op match
         {
           case "AL" => gotoLine(labelsStart(branch))
@@ -456,25 +429,15 @@ class Assembly {
           case "NV" => if(NV()==1) gotoLine(labelsStart(branch))
           case "BX" => regs(15) = regs(registermap.getOrElse(branch,regs(15)))
         }
-
         gotoLine(line+1)
-      }
       //define the label for the function
       case Labels(dr:String, line:Int) =>
-      {
         labelsStart.put(dr,line)
-
         gotoLine(line+1)
-      }
       //define the end of a label to prevent infinite recursion
       case LabelAddress(dr:String, reta:Int) =>
-      {
         labelsEnd.put(dr, reta)
-
         gotoLine(line+1)
-      }
-
-
       case Halt() =>
       case _ =>
     }
