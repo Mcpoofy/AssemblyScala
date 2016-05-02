@@ -195,9 +195,7 @@ class Assembly {
     }
     
   }
-  /**
-   * runtime evaluator of LOLCODE
-   */
+
   private def gotoLine(line: Int) {
 
 
