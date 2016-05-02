@@ -291,7 +291,7 @@ class Assembly {
      
      case StackPush(dr:String, str1:String) => 
      {
-         println(stackcounter)
+     
          val a:Array[String] = dr.split("-");
          val b:Array[String] = str1.split("-")
          var a1:Int = 0
@@ -333,10 +333,7 @@ class Assembly {
                
            }
          }
-           println("printing stack args")
-           println(stack(4095))
-             println(stack(4094))
-               println(stack(4093))
+          
          gotoLine(line+1)
      }
       case StackPop(dr:String, str:String,str1:String) => 
@@ -392,13 +389,13 @@ class Assembly {
              }
              regs(dest) = str1
             case "ldr" =>
-              println(dr + " " + str)
+        
              str1 = 0
              var i =0
              
              for(i <- 0 to (array1.length -1))
              {
-               println(array1(i))
+           
                 if(array1(i).matches("[a-xA-X]+")) str1+=(adressesVar.getOrElse(array1(i),-1))
                 else if( array1(i).matches("[0-9]+")) str1 +=array1(i).substring(0).toInt
                 else if( array1(i).startsWith("#")) str1 +=array1(i).substring(1).toInt
@@ -406,7 +403,7 @@ class Assembly {
                 else if( !array1(i).matches("^[Rr]") && !array1(i).endsWith("[0-9]")) str1 +=(constants.getOrElse(array1(i).substring(1),-1))
                 else str1+=regs(registermap.getOrElse(array1(i),-1))
              }
-              println(str1)
+           
              regs(dest) =  adresses.getOrElse(str1,-1)
             case "str" =>
               
@@ -414,7 +411,7 @@ class Assembly {
              var i =0
              for(i <- 0 to (array1.length-1))
              {
-               println(array1(i) + " " + str1)
+        
                 val t:Int = registermap.getOrElse(array1(i),-1)
                 if(array1(i).matches("[a-xA-X]+")) str1+=(adressesVar.getOrElse(array1(i),-1))
                 else if(array1(i) =="PC") str1+= PC
@@ -422,11 +419,11 @@ class Assembly {
                 else if(array1(i).startsWith("#")) str1 +=array1(i).substring(1).toInt
                 else if(array1(i).matches("^(R|r)") && !array1(i).endsWith("[0-9]"))
                   {
-                  println("hello"); str1 +=(constants.getOrElse(array1(i).substring(1),-1))
+                 str1 +=(constants.getOrElse(array1(i).substring(1),-1))
                   }
                 else str1+=regs(registermap.getOrElse(array1(i),-1))
              }
-             println("stored str1 " + str1)
+            
              adresses.put(str1,regs(dest))
       
             case "ldm" =>
