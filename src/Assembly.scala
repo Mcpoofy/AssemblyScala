@@ -414,22 +414,22 @@ class Assembly {
         op match
         {
           case "AL" => gotoLine(labelsStart(branch))
-          case "NE" => if(NE()==1) gotoLine(labelsStart(branch))
-          case "EQ" => if(EQ()==1) gotoLine(labelsStart(branch))
-          case "CS" => if(CS()==1) gotoLine(labelsStart(branch))
-          case "MI" => if(MI()==1) gotoLine(labelsStart(branch))
-          case "CC" => if(CC()==1) gotoLine(labelsStart(branch))
-          case "PL" => if(PL()==1) gotoLine(labelsStart(branch))
-          case "HI" => if(HI()==1) gotoLine(labelsStart(branch))
-          case "LS" => if(LS()==1) gotoLine(labelsStart(branch))
-          case "GE" => if(GE()==1) gotoLine(labelsStart(branch))
-          case "LT" => if(LT()==1) gotoLine(labelsStart(branch))
-          case "LE" => if(LE()==1) gotoLine(labelsStart(branch))
-          case "GT" => if(GT()==1) gotoLine(labelsStart(branch))
-          case "NV" => if(NV()==1) gotoLine(labelsStart(branch))
+          case "NE" => if(NE()==1) gotoLine(labelsStart(branch)) else  gotoLine(line+1)
+          case "EQ" => if(EQ()==1) gotoLine(labelsStart(branch)) else  gotoLine(line+1)
+          case "CS" => if(CS()==1) gotoLine(labelsStart(branch)) else  gotoLine(line+1)
+          case "MI" => if(MI()==1) gotoLine(labelsStart(branch)) else  gotoLine(line+1)
+          case "CC" => if(CC()==1) gotoLine(labelsStart(branch)) else  gotoLine(line+1)
+          case "PL" => if(PL()==1) gotoLine(labelsStart(branch)) else  gotoLine(line+1)
+          case "HI" => if(HI()==1) gotoLine(labelsStart(branch)) else  gotoLine(line+1)
+          case "LS" => if(LS()==1) gotoLine(labelsStart(branch)) else  gotoLine(line+1)
+          case "GE" => if(GE()==1) gotoLine(labelsStart(branch)) else  gotoLine(line+1)
+          case "LT" => if(LT()==1) gotoLine(labelsStart(branch)) else  gotoLine(line+1)
+          case "LE" => if(LE()==1) gotoLine(labelsStart(branch)) else  gotoLine(line+1)
+          case "GT" => if(GT()==1) gotoLine(labelsStart(branch)) else  gotoLine(line+1)
+          case "NV" => if(NV()==1) gotoLine(labelsStart(branch)) else  gotoLine(line+1)
           case "BX" => regs(15) = regs(registermap.getOrElse(branch,regs(15)))
         }
-        gotoLine(line+1)
+       
       //define the label for the function
       case Labels(dr:String, line:Int) =>
         labelsStart.put(dr,line)
