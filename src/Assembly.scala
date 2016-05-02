@@ -186,7 +186,7 @@ class Assembly {
   private def printRegs(){
     val c = 0
     var i = 0
-    regs.foreach {(r: Int) =>
+    regs.foreach { r: Int =>
       val bin = r.toBinaryString
       val charsRemaining = 32 - bin.length
       val prefix = if (i < 0) "1" else "0" * charsRemaining
@@ -204,7 +204,8 @@ class Assembly {
   // useful for converting r{X} to x
   private def makeHashMap()
   {
-    (0 to 15).foreach {(c: Int) =>
+
+    (0 to 15).foreach { c: Int =>
       registermap.put("r" + c, c)
       registermap.put("r" + c, c)
     }
@@ -411,7 +412,7 @@ class Assembly {
         op match
         {
           case "adr"=>
-            array1.foreach {(elem: String) =>
+            array1.foreach { elem: String =>
               if(elem.matches("[a-xA-X]+"))                            source += adressesVar.getOrElse(elem,-1)
               else if(elem.startsWith("#") && !elem.endsWith("[0-9]")) source += constants.getOrElse(elem.substring(1),-1)
               else if(elem =="PC")                                     source += PC
@@ -420,7 +421,7 @@ class Assembly {
             }
             regs(dest) = source
           case "ldr" =>
-            array1.foreach {(elem: String) =>
+            array1.foreach { elem: String =>
               if(elem.matches("[a-xA-X]+"))                                    source += adressesVar.getOrElse(elem,-1)
               else if( elem.matches("[0-9]+"))                                 source += elem.substring(0).toInt
               else if( elem.startsWith("#"))                                   source += elem.substring(1).toInt
@@ -430,7 +431,7 @@ class Assembly {
             }
             regs(dest) = adresses.getOrElse(source,-1)
           case "str" =>
-            array1.foreach {(elem: String) =>
+            array1.foreach { elem: String =>
               if(elem.matches("[a-xA-X]+"))                               source += adressesVar.getOrElse(elem,-1)
               else if(elem =="PC")                                        source += PC
               else if( elem.matches("[0-9]+"))                            source += elem.substring(0).toInt
