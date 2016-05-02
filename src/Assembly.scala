@@ -250,12 +250,12 @@ class Assembly {
           case "-" => regs(dest) =r1-r2
           case "/" =>regs(dest) =r1/r2
           case "*" =>regs(dest) =r1*r2;setFlags(r1, r2, regs(dest), 1,1,0,0)
-          case "ASR" => regs(dest) =r1 >>> (r2 & 0x000000FF)
-          case "ASRS" => regs(dest) =r1 >>> (r2 & 0x000000FF); setFlags(r1, r2, regs(dest), 1,1,0,0)
+          case "ASR" => regs(dest) =r1 >> (r2 & 0x000000FF)
+          case "ASRS" => regs(dest) =r1 >> (r2 & 0x000000FF); setFlags(r1, r2, regs(dest), 1,1,0,0)
           case "LSL" =>regs(dest) =r1 << (r2 & 0x000000FF)
           case "LSLS" =>regs(dest) =r1 << (r2 & 0x000000FF); setFlags(r1, r2, regs(dest), 1,1,0,0)
-          case "LSR" =>regs(dest) =r1 >> (r2 & 0x000000FF)
-          case "LSRS" =>regs(dest) =r1 >> (r2 & 0x000000FF); setFlags(r1, r2, regs(dest), 1,1,0,0)
+          case "LSR" =>regs(dest) =r1 >>> (r2 & 0x000000FF)
+          case "LSRS" =>regs(dest) =r1 >>> (r2 & 0x000000FF); setFlags(r1, r2, regs(dest), 1,1,0,0)
           case "ROR" =>regs(dest) = Integer.rotateRight(r1, r2 & 0x000000FF)
           case "RORS" =>regs(dest) = Integer.rotateRight(r1, r2 & 0x000000FF); setFlags(r1, r2, regs(dest), 1,1,0,0)
           case _ => println(s"ERROR: no match for Math4($dr, $sr1, $sr2, $op)")
