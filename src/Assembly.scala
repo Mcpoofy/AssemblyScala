@@ -341,7 +341,7 @@ class Assembly {
               else if(elem.startsWith("#") && !elem.endsWith("[0-9]")) source += constants.getOrElse(elem.substring(1),-1)
               else if(elem =="PC")                                     source += PC
               else if(elem.startsWith("#") && elem.endsWith("[0-9]"))  source += elem.substring(1).toInt
-              else                                                     source += regs(registermap.getOrElse(elem,-1))
+              else                                                     source += adresses.getOrElse(registermap.getOrElse(elem,-1),-1)
             }
             regs(dest) = source
           case "ldr" =>
@@ -351,7 +351,7 @@ class Assembly {
               else if( elem.startsWith("#"))                                   source += elem.substring(1).toInt
               else if(elem =="PC")                                             source += PC
               else if( !elem.matches("^[Rr]") && !elem.endsWith("[0-9]")) source += constants.getOrElse(elem.substring(1),-1)
-              else                                                                  source += regs(registermap.getOrElse(elem,-1))
+              else                                                             source += adresses.getOrElse(registermap.getOrElse(elem,-1),-1)
             }
             regs(dest) = adresses.getOrElse(source,-1)
           case "str" =>
