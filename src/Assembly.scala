@@ -156,12 +156,14 @@ class Assembly {
   }
   // puts R{X} and r{X} where x is in [0,15] into a hashmap with the value x as a result
   // useful for converting r{X} to x
+  // Also generate addresses for the registers
   private def makeHashMap()
   {
 
     (0 to 15).foreach { c: Int =>
       registermap.put("r" + c, c)
       registermap.put("r" + c, c)
+      adresses.put(c, c*4)
     }
 
   }
@@ -350,9 +352,9 @@ class Assembly {
               else if( elem.matches("[0-9]+"))                                 source += elem.substring(0).toInt
               else if( elem.startsWith("#"))                                   source += elem.substring(1).toInt
               else if(elem =="PC")                                             source += PC
-              else if( !elem.matches("^[Rr]") && !elem.endsWith("[0-9]")) source += constants.getOrElse(elem.substring(1),-1)
               else                                                             source += adresses.getOrElse(registermap.getOrElse(elem,-1),-1)
             }
+           
             regs(dest) = adresses.getOrElse(source,-1)
           case "str" =>
             array1.foreach { elem: String =>
@@ -360,9 +362,9 @@ class Assembly {
               else if(elem =="PC")                                        source += PC
               else if( elem.matches("[0-9]+"))                            source += elem.substring(0).toInt
               else if(elem.startsWith("#"))                               source += elem.substring(1).toInt
-              else if(elem.matches("^(R|r)") && !elem.endsWith("[0-9]"))  source += constants.getOrElse(elem.substring(1),-1)
-              else                                                        source += regs(registermap.getOrElse(elem,-1))
+              else                                                        source += adresses.getOrElse(registermap.getOrElse(elem,-1),-1)
             }
+     
             adresses.put(source,regs(dest))
           case "ldm" =>
             var writeback1 = 0
@@ -434,7 +436,7 @@ class Assembly {
       case Labels(dr:String, line:Int) =>
         labelsStart.put(dr,line)
         gotoLine(line+1)
-      //define the end of a label to prevent infinite recursion
+      //define where the branch will jump to at the end
       case LabelAddress(dr:String, reta:Int) =>
         labelsEnd.put(dr, reta)
         gotoLine(line+1)
@@ -1015,6 +1017,16 @@ class Assembly {
     def apply(branch:String)
     {
       lines(current) = Branching(branch, "BX",1, branch)
+      current +=1
+    }
+  }
+
+  object BL
+  {
+
+    def apply(branch:String)
+    {
+      lines(current) = LabelAddress(branch, current)
       current +=1
     }
   }
